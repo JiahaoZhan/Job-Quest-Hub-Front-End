@@ -12,7 +12,7 @@ export const LeftPanel = ({ jobs, searchTerm, pageSize }) => {
         const firstPageIndex = (currentPage - 1) * pageSize;
         const lastPageIndex = firstPageIndex + pageSize;
         return jobs.slice(firstPageIndex, lastPageIndex);
-    }, [currentPage])
+    }, [currentPage, jobs])
 
     const dispatch = useAppDispatch();
 

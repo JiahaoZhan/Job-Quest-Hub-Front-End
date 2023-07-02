@@ -17,8 +17,7 @@ export const RegisterForm = () => {
             lastName: values.lastName
         }))
         .then((res)=> {
-            console.log("dispatched")
-            // navigate('/login');
+            navigate('/login');
         })
     }
 

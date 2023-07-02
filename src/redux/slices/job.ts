@@ -165,7 +165,6 @@ export const search = createAsyncThunk(
     async (parameters: {keywords: String}, thunkAPI) => {
         try {
             const { data } = await searchAPI({query: parameters.keywords});
-            console.log(data);
             return data;
         } catch (error) {
             console.log(error)
