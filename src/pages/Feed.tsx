@@ -3,6 +3,7 @@ import { useAppDispatch, useAppSelector, saved } from "../redux";
 import { useNavigate } from "react-router";
 import { search, updateSearchTerm } from "../redux/slices/job";
 import { LeftPanel, RightPanel } from "../components/Feed";
+import { Filter } from "../components";
 
 export const Feed: React.FC = () => {
 
@@ -54,6 +55,7 @@ export const Feed: React.FC = () => {
         return index
     })
 
+    const chips = useAppSelector(state => state.job.chips);
 
 
     return (
@@ -72,8 +74,7 @@ export const Feed: React.FC = () => {
                     />
                     <button type="submit" className="text-[#0a66c2] font-semibold border-2 border-[#0a66c2] rounded-3xl px-3 py-1">Search</button>
                 </form>
-                <button className="mx-2 text-slate-500 font-semibold border-2 border-slate-300 rounded-3xl px-3 py-1">Date posted</button>
-                <button className="mx-2 text-slate-500 font-semibold border-2 border-slate-300 rounded-3xl px-3 py-1">Contract time</button>
+                {chips.map((chip) => <Filter options={chip.options} btnText={chip.type}/>)}
             </div>
             <hr className="my-2" />
           

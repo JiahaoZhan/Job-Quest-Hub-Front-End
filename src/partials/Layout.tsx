@@ -4,7 +4,7 @@ import { Header, Footer } from "./";
 
 
 export const Layout = () => (
-    <div className="overflow-x-hidden">
+    <div className="flex flex-col h-screen">
         <Header/>
         <Outlet/>
         <Footer/>

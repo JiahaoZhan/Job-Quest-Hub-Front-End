@@ -11,7 +11,7 @@ export const SavedJobs = () => {
 
     }
     return (
-        <div>
+        <div className="grow">
             <ul>
                 {/* Need to return JobDTO instead of DAO from the backend - Fix later  */}
                 {savedJobs.map((job:any) => {
