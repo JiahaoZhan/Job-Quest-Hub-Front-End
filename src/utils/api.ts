@@ -26,6 +26,21 @@ export function searchAPI(data) {
   })
 }
 
+export function savedAPI() {
+  return network({
+    url: `/save/jobs`,
+    method: "get",
+  })
+}
+
+export function saveAPI(data) {
+  return network({
+    url: `/save/jobs`,
+    method: "post",
+    data
+  })
+}
+
 
 // export function resetPwdAPI(data) {
 //   return network({

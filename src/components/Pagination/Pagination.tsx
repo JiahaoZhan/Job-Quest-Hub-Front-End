@@ -2,6 +2,7 @@ import React from "react"
 import classnames from "classnames"
 import { usePagination, DOTS } from "./hooks"
 import "./style/pagination.scss"
+import { v4 } from 'uuid'
 
 interface IProps {
     onPageChange: (currentPage: number) => void,
@@ -53,7 +54,8 @@ export const Pagination:React.FC<IProps> = ({
       className={classnames('pagination-container', className && { [className]: className })}
     >
        {/* Left navigation arrow */}
-      <li
+      <li 
+      key={v4()}
         className={classnames('pagination-item', {
           disabled: currentPage === 1
         })}
@@ -65,12 +67,13 @@ export const Pagination:React.FC<IProps> = ({
          
         // If the pageItem is a DOT, render the DOTS unicode character
         if (pageNumber === DOTS) {
-          return <li className="pagination-item dots">&#8230;</li>;
+          return <li key={v4()} className="pagination-item dots">&#8230;</li>;
         }
 		
         // Render our Page Pills
         return (
           <li
+            key={v4()}
             className={classnames('pagination-item', {
               selected: pageNumber === currentPage
             })}
@@ -82,6 +85,7 @@ export const Pagination:React.FC<IProps> = ({
       })}
       {/*  Right Navigation arrow */}
       <li
+        key={v4()}
         className={classnames('pagination-item', {
           disabled: currentPage === lastPage
         })}

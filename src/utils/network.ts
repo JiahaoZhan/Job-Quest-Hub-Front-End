@@ -17,7 +17,8 @@ service.interceptors.request.use(
   (config) => {
     const token = store.getState().user.token;
     if (token) {
-      config.headers["Authorization"] = token
+      config.headers["Authorization"] = `Bearer ${token}`;
+      console.log(config.headers['Authorization']);
       console.log("***Set JWT token***")
     }
     return config;

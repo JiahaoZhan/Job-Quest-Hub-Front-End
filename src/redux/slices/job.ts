@@ -1,66 +1,103 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
-import type { PayloadAction } from '@reduxjs/toolkit'
-import { searchAPI } from "../../utils"
+import { searchAPI, saveAPI, savedAPI } from "../../utils"
 
-export interface Category {
-    tag: string,
-    label: string
+export interface Highlights {
+    title: string,
+    items: string[]
 }
 
-export interface Company {
-    display_name: string
+export interface Options {
+    text: string,
+    value: string,
 }
 
-export interface Location {
-    area: string[],
+export interface Chip {
+    type: string,
+    param: string,
+    options: Options[];
+}
+
+export interface RelatedLinks {
+    link: string,
+    text: string,
+}
+
+export interface SearchMeta {
+    id: string,
+    status: string,
+    json_endpoint: string,
+    created_at: string,
+    processed_at: string,
+    google_jobs_url: string,
+    raw_html_file: string,
+    total_time_taken: number
+}
+
+export interface SearchParams {
+    q: string,
+    engine: string,
+    google_domain: string,
+    hl: string,
+    gl: string
+}
+
+export interface DetectedExtensions {
+    posted_at: string,
+    schedule_type: string,
 }
 
 export interface Job {
-     adref: string,
-     keywords: string[],
-     title: string,
-     location: Location,
-     salary_min: number,
-     id: string,
-     latitude: string,
-     longitude: string,
-     company: Company,
-     salary_is_predicted: string,
-     redirect_url: string,
-     contract_time: string,
-     salary_max: number,
-     description: string,
-     created: string,
-     category: Category,
+    title: string,
+    company_name: string,
+    location: string,
+    via: string,
+    description: string,
+    job_highlights: Highlights,
+    related_links: RelatedLinks,
+    thumbnail: string,
+    extensions: string[]
+    detected_extensions: DetectedExtensions,
+    job_id: string,
 }
 
 export interface JobState {
     loading: boolean,
+    searchMeta: SearchMeta | null,
+    searchParams: SearchParams | null,
     jobs: Job[],
+    savedJobs: Job[],
+    chips: Chip[],
     selected: number,
     filterBy: string,
     location: string,
     searchTerm: string,
     sortBy: string,
-    error: string | null
+    error: string | null,
+    savedJobIds: string[]
 }
 
 const initialState: JobState = {
     loading: false,
     jobs: [],
+    savedJobs: [],
+    searchMeta: null,
+    searchParams: null,
+    chips: [],
     selected: 0,
     error: null,
     location: "Canada",
     sortBy: "title",
     searchTerm: "",
-    filterBy: "all"
+    filterBy: "all",
+    savedJobIds: [],
 }
 
-export const search = createAsyncThunk(
-    "job/search",
-    async (parameters: {keywords: String}, thunkAPI) => {
+export const saved = createAsyncThunk(
+    "job/saved",
+    async (parameters: null, thunkAPI) => {
         try {
-            const {data} = await searchAPI({what: parameters.keywords});
+            const { data } = await savedAPI();
+            console.log(data);
             return data;
         } catch (error) {
             console.log(error)
@@ -68,6 +105,62 @@ export const search = createAsyncThunk(
         }
     }
 )
+
+
+export const save = createAsyncThunk(
+    "job/save",
+    async (parameters: {
+        title: string,
+        company_name: string,
+        location: string,
+        via: string,
+        description: string,
+        job_highlights: Highlights,
+        related_links: RelatedLinks,
+        thumbnail: string,
+        extensions: string[]
+        detected_extensions: DetectedExtensions,
+        job_id: string}, thunkAPI) => {
+        try {
+            const { data } = await saveAPI({
+                title: parameters.title,
+                company_name: parameters.company_name,
+                location: parameters.location,
+                via: parameters.via,
+                description: parameters.description,
+                qualifications: parameters.job_highlights[0].items.join("\n"),
+                responsibilities: parameters.job_highlights[1].items.join("\n"),
+                benefits: parameters.job_highlights[2].items.join("\n"),
+                link_title: parameters.related_links[0].text,
+                related_link: parameters.related_links[0].link,
+                thumbnail: parameters.thumbnail,
+                posted_at: parameters.detected_extensions.posted_at,
+                schedule_type: parameters.detected_extensions.schedule_type,
+                job_id: parameters.job_id
+            });
+            console.log(data);
+            return data;
+        } catch (error) {
+            console.log(error)
+            alert('Fail to save. Please try again!');
+        }
+    }
+)
+
+export const search = createAsyncThunk(
+    "job/search",
+    async (parameters: {keywords: String}, thunkAPI) => {
+        try {
+            const { data } = await searchAPI({query: parameters.keywords});
+            console.log(data);
+            return data;
+        } catch (error) {
+            console.log(error)
+            alert('Fail to search. Please try again!');
+        }
+    }
+)
+
 export const jobSlice = createSlice({
     name: "job",
     initialState,
@@ -92,15 +185,39 @@ export const jobSlice = createSlice({
         },
         [search.fulfilled.type]: (state, action) => {
             if (action.payload) {
-                state.jobs = [...action.payload]
+                state.jobs = action.payload.jobs_results;
+                state.chips = action.payload.chips;
+                state.searchMeta = action.payload.search_metadata;
+                state.searchParams = action.payload.search_parameters;
             }
             state.loading = false;
             state.error = null;
         },
-        [search.rejected.type]: (state, action) => {
+        [saved.rejected.type]: (state, action) => {
             state.loading = false;
             state.error = action.payload
         },
+        [saved.pending.type]: (state) => {
+            state.loading = true;
+        },
+        [saved.fulfilled.type]: (state, action) => {
+            if (action.payload) {
+                let ids : string[] = [];
+                action.payload.forEach(job => {
+                    console.log(job.jobId);
+                    ids.push(job.jobId);
+                });
+                state.savedJobIds = ids;
+            }
+            state.savedJobs = action.payload;
+            state.loading = false;
+            state.error = null;
+        },
+        [saved.rejected.type]: (state, action) => {
+            state.loading = false;
+            state.error = action.payload
+        },
+
     }});
 
 export const { updateSelectedIndex, updateFilterBy, updateSearchTerm, updateSortBy }  = jobSlice.actions;
