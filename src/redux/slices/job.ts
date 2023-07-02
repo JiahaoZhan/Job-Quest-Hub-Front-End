@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
-import { searchAPI, saveAPI, savedAPI } from "../../utils"
+import { searchAPI, saveAPI, savedAPI, unsaveAPI } from "../../utils"
 
 export interface Highlights {
     title: string,
@@ -106,6 +106,20 @@ export const saved = createAsyncThunk(
     }
 )
 
+export const unsave = createAsyncThunk(
+    "job/unsave",
+    async (parameters: { job_id: string }, thunkAPI) => {
+        try {
+            const { data } = await unsaveAPI({job_id: parameters.job_id});
+            console.log(data);
+            return data;
+        } catch (error) {
+            console.log(error)
+            alert('Fail to search. Please try again!');
+        }
+    }
+)
+
 
 export const save = createAsyncThunk(
     "job/save",
@@ -138,7 +152,6 @@ export const save = createAsyncThunk(
                 schedule_type: parameters.detected_extensions.schedule_type,
                 job_id: parameters.job_id
             });
-            console.log(data);
             return data;
         } catch (error) {
             console.log(error)
@@ -177,7 +190,7 @@ export const jobSlice = createSlice({
         },
         updateFilterBy: (state, action) => {
             state.filterBy = action.payload;
-        }
+        },
     },
     extraReducers: {
         [search.pending.type]: (state) => {
@@ -193,7 +206,37 @@ export const jobSlice = createSlice({
             state.loading = false;
             state.error = null;
         },
-        [saved.rejected.type]: (state, action) => {
+        [search.rejected.type]: (state, action) => {
+            state.loading = false;
+            state.error = action.payload
+        },
+        [unsave.pending.type]: (state) => {
+            state.loading = true;
+        },
+        [unsave.fulfilled.type]: (state, action) => {
+            if (action.payload) {
+                state.savedJobIds = [...state.savedJobIds].filter((id) => id != action.payload);
+                state.savedJobs = [...state.savedJobs].filter((job : any) => job.jobId != action.payload);
+            }
+            state.loading = false;
+            state.error = null;
+        },
+        [unsave.rejected.type]: (state, action) => {
+            state.loading = false;
+            state.error = action.payload
+        },
+        [save.pending.type]: (state) => {
+            state.loading = true;
+        },
+        [save.fulfilled.type]: (state, action) => {
+            if (action.payload) {
+                state.savedJobs.push(action.payload);
+                state.savedJobIds.push(action.payload.jobId);
+            }
+            state.loading = false;
+            state.error = null;
+        },
+        [save.rejected.type]: (state, action) => {
             state.loading = false;
             state.error = action.payload
         },
@@ -204,7 +247,6 @@ export const jobSlice = createSlice({
             if (action.payload) {
                 let ids : string[] = [];
                 action.payload.forEach(job => {
-                    console.log(job.jobId);
                     ids.push(job.jobId);
                 });
                 state.savedJobIds = ids;
@@ -217,7 +259,6 @@ export const jobSlice = createSlice({
             state.loading = false;
             state.error = action.payload
         },
-
     }});
 
 export const { updateSelectedIndex, updateFilterBy, updateSearchTerm, updateSortBy }  = jobSlice.actions;

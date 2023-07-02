@@ -1,7 +1,6 @@
-import React, { useState } from "react"
-import { useAppDispatch, useAppSelector } from "../redux";
+import React, { useState, useEffect } from "react"
+import { useAppDispatch, useAppSelector, saved } from "../redux";
 import { useNavigate } from "react-router";
-import { Input } from 'antd';
 import { search, updateSearchTerm } from "../redux/slices/job";
 import { LeftPanel, RightPanel } from "../components/Feed";
 
@@ -25,7 +24,10 @@ export const Feed: React.FC = () => {
         }));
     }
 
-    const { Search } = Input;
+    useEffect(() => {
+        dispatch(saved(null));
+    }, [])
+
 
     const searchTerm = useAppSelector(state => {
         const searchTerm = state.job.searchTerm;

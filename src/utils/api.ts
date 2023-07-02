@@ -41,6 +41,14 @@ export function saveAPI(data) {
   })
 }
 
+export function unsaveAPI(data) {
+  return network({
+    url: `/unsave/jobs`,
+    method: "post",
+    data
+  })
+}
+
 
 // export function resetPwdAPI(data) {
 //   return network({

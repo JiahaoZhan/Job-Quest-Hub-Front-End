@@ -4,11 +4,9 @@ import { v4 } from 'uuid';
 
 export const SavedJobs = () => {
     const dispatch = useAppDispatch();
-    useEffect(() => {
-        dispatch(saved(null));
-    }, [])
-    const savedJobs = useAppSelector(state => state.job.savedJobs);
 
+    const savedJobs = useAppSelector(state => state.job.savedJobs);
+    
     const onClick = () => {
 
     }
